@@ -1,0 +1,17 @@
+{
+  "name": "Recetario de café · lab",
+  "short_name": "Café Lab",
+  "description": "Recetario y cuaderno de práctica de café: espresso, bebidas con leche y métodos de filtro. Con cronómetro, calculadora de ratio y bitácora.",
+  "lang": "es-AR",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#17110d",
+  "theme_color": "#17110d",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -1,0 +1,44 @@
+RECETARIO DE CAFÉ · versión app / PWA
+=====================================
+
+Esta carpeta es la app lista para subir a un hosting y usar en el celular.
+
+ARCHIVOS
+  index.html              -> la app
+  manifest.json           -> datos de la PWA (nombre, íconos, colores)
+  service-worker.js        -> hace que funcione offline
+  icon-192.png            -> ícono
+  icon-512.png            -> ícono
+  icon-512-maskable.png    -> ícono (recorte Android)
+  make_icons.py           -> script con el que se generaron los íconos (no hace falta subirlo)
+
+IMPORTANTE
+  Tiene que servirse por HTTPS (o localhost). El service worker y "agregar a
+  pantalla de inicio" NO funcionan abriendo el index.html con doble clic (file://).
+  Cualquiera de los hostings de abajo ya te da HTTPS.
+
+SUBIRLA — OPCIÓN FÁCIL (Netlify, sin git)
+  1. Entrá a https://app.netlify.com/drop
+  2. Arrastrá ESTA carpeta (cafe-app) a la ventana.
+  3. Te queda una URL https lista. Fin.
+
+SUBIRLA — OPCIÓN GITHUB PAGES
+  1. Creá un repo y subí estos archivos a la raíz.
+  2. Settings > Pages > Branch: main / root > Save.
+  3. En un minuto te da la URL https://usuario.github.io/repo/
+
+INSTALARLA EN EL CELULAR
+  1. Abrí la URL en Chrome (Android) o Safari (iPhone).
+  2. Menú del navegador > "Agregar a pantalla de inicio" / "Instalar app".
+  3. Queda con ícono propio, pantalla completa y anda offline.
+
+SOBRE TUS DATOS
+  Recetas, bitácora y practicadas se guardan en el navegador (localStorage) y,
+  al instalar la PWA, se piden como almacenamiento persistente para que no se
+  borren solos. Aun así, el dato vive en ESE navegador de ESE teléfono.
+  Para respaldo o para pasarlo a otro dispositivo, usá el botón EXPORTAR del
+  encabezado: te baja un .json con todo, que después cargás con IMPORTAR.
+
+ACTUALIZAR LA APP MÁS ADELANTE
+  Si cambiás archivos, subí "cafe-lab-v1" a "cafe-lab-v2" en service-worker.js
+  (la constante CACHE) para que los celulares tomen la versión nueva.

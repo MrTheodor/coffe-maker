@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Recetario de café · lab</title>
+<meta name="description" content="Recetario y cuaderno de práctica de café: espresso, bebidas con leche y métodos de filtro. Con cronómetro, calculadora de ratio y bitácora.">
+<meta name="theme-color" content="#17110d">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Café Lab">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#17110d;
+    --bg2:#1f1710;
+    --card:#241a12;
+    --card-hi:#2c2016;
+    --line:#3a2c1f;
+    --cream:#ece1d0;
+    --cream-dim:#a89680;
+    --cream-faint:#6f6152;
+    --amber:#d99a3a;
+    --amber-deep:#b97d24;
+    --green:#8fb573;
+    --green-dim:#5e7a4a;
+    --font-display:"Oswald",system-ui,sans-serif;
+    --font-body:"IBM Plex Sans",system-ui,sans-serif;
+    --font-mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);
+    color:var(--cream);
+    font-family:var(--font-body);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  ::selection{background:var(--amber);color:#17110d}
+
+  /* ---------- header ---------- */
+  header{
+    border-bottom:1px solid var(--line);
+    padding:34px 26px 26px;
+    max-width:1120px;
+    margin:0 auto;
+  }
+  .eyebrow{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:.32em;
+    text-transform:uppercase;
+    color:var(--amber);
+    margin-bottom:14px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:26px;height:1px;background:var(--amber);display:inline-block;
+  }
+  h1{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:clamp(38px,8vw,74px);
+    line-height:.95;
+    letter-spacing:-.01em;
+    text-transform:uppercase;
+  }
+  h1 .thin{font-weight:300;color:var(--cream-dim)}
+  .sub{
+    margin-top:16px;
+    max-width:520px;
+    color:var(--cream-dim);
+    font-size:15px;
+  }
+  .progress-line{
+    margin-top:22px;
+    font-family:var(--font-mono);
+    font-size:12px;
+    color:var(--cream-faint);
+    display:flex;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .bar{
+    flex:1;
+    min-width:140px;
+    height:4px;
+    background:var(--line);
+    border-radius:2px;
+    overflow:hidden;
+    max-width:260px;
+  }
+  .bar span{display:block;height:100%;background:var(--green);width:0;transition:width .5s ease}
+  .count{color:var(--green)}
+  .backup-row{
+    margin-top:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  }
+  .backup-label{
+    font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--cream-faint);
+  }
+  .backup-btn{
+    font-family:var(--font-mono);font-size:11px;letter-spacing:.05em;color:var(--cream-dim);
+    background:transparent;border:1px solid var(--line);border-radius:7px;padding:6px 12px;
+    cursor:pointer;transition:all .16s;
+  }
+  .backup-btn:hover{border-color:var(--amber);color:var(--amber)}
+
+  /* ---------- toolbar ---------- */
+  .toolbar{
+    max-width:1120px;
+    margin:0 auto;
+    padding:22px 26px 6px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    position:sticky;
+    top:0;
+    background:linear-gradient(var(--bg) 78%,transparent);
+    z-index:20;
+  }
+  .chip{
+    font-family:var(--font-mono);
+    font-size:12px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--cream-dim);
+    background:transparent;
+    border:1px solid var(--line);
+    border-radius:100px;
+    padding:7px 15px;
+    cursor:pointer;
+    transition:all .18s ease;
+    white-space:nowrap;
+  }
+  .chip:hover{border-color:var(--amber-deep);color:var(--cream)}
+  .chip.active{background:var(--amber);border-color:var(--amber);color:#17110d;font-weight:500}
+  .chip.done-toggle.active{background:var(--green);border-color:var(--green)}
+
+  /* ---------- grid ---------- */
+  main{max-width:1120px;margin:0 auto;padding:18px 26px 90px}
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+    gap:14px;
+  }
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:20px 20px 18px;
+    cursor:pointer;
+    position:relative;
+    transition:transform .18s ease,border-color .18s ease,background .18s ease;
+    overflow:hidden;
+  }
+  .card::after{
+    content:"";
+    position:absolute;inset:0;
+    background:radial-gradient(120% 80% at 100% 0%,rgba(217,154,58,.09),transparent 60%);
+    opacity:0;transition:opacity .2s ease;pointer-events:none;
+  }
+  .card:hover{transform:translateY(-3px);border-color:var(--amber-deep);background:var(--card-hi)}
+  .card:hover::after{opacity:1}
+  .card.done{border-color:var(--green-dim)}
+  .card-top{
+    display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:14px;
+  }
+  .card-cat{
+    font-family:var(--font-mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--amber);padding-top:4px;
+  }
+  .check{
+    width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line);
+    flex-shrink:0;display:grid;place-items:center;transition:all .18s ease;
+  }
+  .card.done .check{background:var(--green);border-color:var(--green)}
+  .check svg{width:12px;height:12px;stroke:#17110d;stroke-width:3;fill:none;opacity:0;transition:opacity .18s}
+  .card.done .check svg{opacity:1}
+  .card h3{
+    font-family:var(--font-display);font-weight:600;text-transform:uppercase;
+    font-size:26px;line-height:1;letter-spacing:.01em;margin-bottom:4px;
+  }
+  .card-note{color:var(--cream-dim);font-size:13.5px;margin-bottom:16px;min-height:20px}
+  .specs{
+    display:flex;gap:18px;font-family:var(--font-mono);
+    border-top:1px solid var(--line);padding-top:14px;
+  }
+  .spec .k{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--cream-faint)}
+  .spec .v{font-size:15px;color:var(--cream);font-weight:500}
+  .spec .v small{font-size:10px;color:var(--cream-dim);font-weight:400}
+
+  .empty{
+    grid-column:1/-1;text-align:center;padding:70px 20px;color:var(--cream-faint);
+    font-family:var(--font-mono);font-size:13px;
+  }
+
+  /* ---------- modal ---------- */
+  .overlay{
+    position:fixed;inset:0;background:rgba(8,5,3,.72);backdrop-filter:blur(4px);
+    z-index:50;display:none;align-items:flex-start;justify-content:center;
+    padding:5vh 18px 40px;overflow-y:auto;
+  }
+  .overlay.open{display:flex}
+  .modal{
+    background:var(--bg2);border:1px solid var(--line);border-radius:16px;
+    max-width:600px;width:100%;position:relative;
+    animation:rise .28s cubic-bezier(.2,.7,.3,1);
+  }
+  @keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+  .modal-head{
+    padding:26px 28px 20px;border-bottom:1px solid var(--line);position:relative;
+  }
+  .modal-cat{
+    font-family:var(--font-mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--amber);margin-bottom:8px;
+  }
+  .modal h2{
+    font-family:var(--font-display);font-weight:700;text-transform:uppercase;
+    font-size:40px;line-height:.95;letter-spacing:.01em;
+  }
+  .modal-note{color:var(--cream-dim);margin-top:8px;font-size:14.5px}
+  .close{
+    position:absolute;top:22px;right:22px;width:34px;height:34px;border-radius:50%;
+    border:1px solid var(--line);background:transparent;color:var(--cream-dim);
+    cursor:pointer;font-size:18px;line-height:1;display:grid;place-items:center;transition:all .16s;
+  }
+  .close:hover{border-color:var(--amber);color:var(--cream)}
+
+  .stat-strip{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));
+    gap:1px;background:var(--line);border-bottom:1px solid var(--line);
+  }
+  .stat{background:var(--bg2);padding:14px 10px;text-align:center}
+  .stat .k{font-family:var(--font-mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--cream-faint);margin-bottom:5px}
+  .stat .v{font-family:var(--font-mono);font-size:17px;color:var(--amber);font-weight:600}
+  .stat .v small{font-size:11px;color:var(--cream-dim)}
+
+  .modal-body{padding:24px 28px 28px}
+  .body-label{
+    font-family:var(--font-mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--cream-faint);margin:0 0 14px;
+  }
+  ol.steps{list-style:none;counter-reset:s;margin-bottom:24px}
+  ol.steps li{
+    counter-increment:s;position:relative;padding:0 0 16px 42px;font-size:14.5px;color:var(--cream);
+  }
+  ol.steps li::before{
+    content:counter(s,decimal-leading-zero);
+    position:absolute;left:0;top:-1px;
+    font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--amber);
+    background:var(--card);border:1px solid var(--line);border-radius:6px;
+    width:28px;height:24px;display:grid;place-items:center;
+  }
+  ol.steps li:not(:last-child)::after{
+    content:"";position:absolute;left:13px;top:26px;bottom:6px;width:1px;background:var(--line);
+  }
+  .tip{
+    background:var(--card);border-left:2px solid var(--amber);border-radius:0 8px 8px 0;
+    padding:14px 16px;font-size:13.5px;color:var(--cream-dim);margin-bottom:22px;
+  }
+  .tip b{color:var(--amber);font-weight:600}
+  .modal-mark{
+    width:100%;padding:14px;border-radius:10px;border:1px solid var(--line);
+    background:transparent;color:var(--cream);font-family:var(--font-mono);
+    font-size:13px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;
+    transition:all .18s;display:flex;align-items:center;justify-content:center;gap:10px;
+  }
+  .modal-mark:hover{border-color:var(--amber);color:var(--amber)}
+  .modal-mark.done{background:var(--green);border-color:var(--green);color:#17110d;font-weight:600}
+
+  footer{
+    max-width:1120px;margin:0 auto;padding:0 26px 50px;
+    font-family:var(--font-mono);font-size:11px;color:var(--cream-faint);line-height:1.7;
+  }
+  footer .rule{height:1px;background:var(--line);margin-bottom:20px}
+
+  /* ---------- nueva receta / badge ---------- */
+  .chip.add{
+    background:transparent;border:1px dashed var(--amber-deep);color:var(--amber);
+    font-weight:500;margin-left:auto;
+  }
+  .chip.add:hover{background:var(--amber);color:#17110d;border-style:solid}
+  .badge-mine{
+    font-family:var(--font-mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--green);border:1px solid var(--green-dim);border-radius:4px;padding:2px 6px;
+  }
+  .card-cat-row{display:flex;align-items:center;gap:8px}
+
+  /* ---------- form ---------- */
+  .form-body{padding:24px 28px 28px}
+  .field{margin-bottom:16px}
+  .field label{
+    display:block;font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--cream-faint);margin-bottom:7px;
+  }
+  .field input,.field select,.field textarea{
+    width:100%;background:var(--card);border:1px solid var(--line);border-radius:8px;
+    padding:11px 13px;color:var(--cream);font-family:var(--font-body);font-size:14px;
+    transition:border-color .16s;
+  }
+  .field input:focus,.field select:focus,.field textarea:focus{
+    outline:none;border-color:var(--amber);
+  }
+  .field textarea{resize:vertical;min-height:96px;line-height:1.5}
+  .field .hint{font-family:var(--font-mono);font-size:10px;color:var(--cream-faint);margin-top:6px}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .field-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  .form-actions{display:flex;gap:10px;margin-top:24px}
+  .btn{
+    flex:1;padding:14px;border-radius:10px;font-family:var(--font-mono);font-size:12px;
+    letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:all .18s;border:1px solid var(--line);
+  }
+  .btn-primary{background:var(--amber);border-color:var(--amber);color:#17110d;font-weight:600}
+  .btn-primary:hover{background:var(--amber-deep);border-color:var(--amber-deep)}
+  .btn-ghost{background:transparent;color:var(--cream-dim)}
+  .btn-ghost:hover{border-color:var(--cream-dim);color:var(--cream)}
+  .btn-danger{background:transparent;color:#c9707a;border-color:#5a3238;flex:0 0 auto;padding:14px 18px}
+  .btn-danger:hover{background:#c9707a;border-color:#c9707a;color:#17110d}
+  .modal-actions-row{display:flex;gap:10px}
+  .modal-mini{
+    padding:11px 16px;border-radius:9px;border:1px solid var(--line);background:transparent;
+    color:var(--cream-dim);font-family:var(--font-mono);font-size:12px;letter-spacing:.05em;
+    text-transform:uppercase;cursor:pointer;transition:all .16s;
+  }
+  .modal-mini:hover{border-color:var(--amber);color:var(--amber)}
+  .modal-mini.del:hover{border-color:#c9707a;color:#c9707a}
+
+  /* ---------- herramientas: cronometro + calc ---------- */
+  .tools{padding:20px 28px 0;display:grid;gap:12px}
+  .tools.two{grid-template-columns:1fr 1fr}
+  .tool{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:15px 16px}
+  .tool-label{font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--cream-faint);margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .tool-label .target{color:var(--amber);text-transform:none;letter-spacing:.02em}
+  .timer-display{font-family:var(--font-mono);font-size:34px;font-weight:600;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin-bottom:13px}
+  .timer-display.idle{color:var(--cream-faint)}
+  .timer-display.running{color:var(--cream)}
+  .timer-display.in-range{color:var(--green)}
+  .timer-display.over{color:#e0894a}
+  .timer-btns{display:flex;gap:8px}
+  .timer-btns button{flex:1;padding:9px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--cream);font-family:var(--font-mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:all .16s;white-space:nowrap}
+  .timer-btns button:hover{border-color:var(--amber);color:var(--amber)}
+  .timer-btns .send:hover{border-color:var(--green);color:var(--green)}
+  .calc-out-big{font-family:var(--font-mono);font-size:30px;font-weight:600;color:var(--amber);line-height:1;margin-bottom:3px}
+  .calc-out-big small{font-size:15px;color:var(--cream-dim)}
+  .calc-ratio{font-family:var(--font-mono);font-size:12px;color:var(--cream-dim);margin-bottom:13px}
+  .calc-in{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  .calc-in input{width:72px;background:var(--bg2);border:1px solid var(--line);border-radius:7px;padding:8px 10px;color:var(--cream);font-family:var(--font-mono);font-size:14px;text-align:center}
+  .calc-in input:focus{outline:none;border-color:var(--amber)}
+  .calc-in label{font-family:var(--font-mono);font-size:11px;color:var(--cream-dim)}
+  .calc-scale{display:flex;gap:6px}
+  .calc-scale button{flex:1;padding:7px;border-radius:7px;border:1px solid var(--line);background:transparent;color:var(--cream-dim);font-family:var(--font-mono);font-size:11px;cursor:pointer;transition:all .16s}
+  .calc-scale button:hover{border-color:var(--amber);color:var(--amber)}
+
+  /* ---------- bitacora ---------- */
+  .log-form{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+  .log-form input{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:9px 11px;color:var(--cream);font-family:var(--font-body);font-size:13px}
+  .log-form input:focus{outline:none;border-color:var(--amber)}
+  .log-form .full{grid-column:1/-1}
+  .log-add{width:100%;padding:10px;margin-bottom:18px;border-radius:8px;border:1px dashed var(--amber-deep);background:transparent;color:var(--amber);font-family:var(--font-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:all .16s}
+  .log-add:hover{background:var(--amber);color:#17110d;border-style:solid}
+  .log-list{display:flex;flex-direction:column;gap:8px;margin-bottom:22px}
+  .log-empty{font-family:var(--font-mono);font-size:12px;color:var(--cream-faint);padding:2px 0 18px}
+  .log-entry{background:var(--card);border:1px solid var(--line);border-radius:9px;padding:11px 34px 11px 13px;position:relative}
+  .log-meta{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+  .log-date{font-family:var(--font-mono);font-size:11px;color:var(--amber)}
+  .log-tag{font-family:var(--font-mono);font-size:11px;color:var(--cream-dim);background:var(--bg2);border-radius:5px;padding:2px 7px}
+  .log-note-text{font-size:13px;color:var(--cream);margin-top:7px;line-height:1.45}
+  .log-del{position:absolute;top:9px;right:9px;width:22px;height:22px;border-radius:5px;border:1px solid var(--line);background:transparent;color:var(--cream-faint);cursor:pointer;font-size:11px;line-height:1;transition:all .16s}
+  .log-del:hover{border-color:#c9707a;color:#c9707a}
+
+  @media (max-width:520px){
+    header{padding:26px 20px 20px}
+    .toolbar{padding:16px 20px 4px}
+    main{padding:16px 20px 70px}
+    .modal h2{font-size:32px}
+    footer{padding:0 20px 40px}
+    .field-row,.field-row3{grid-template-columns:1fr}
+    .chip.add{margin-left:0}
+    .tools.two{grid-template-columns:1fr}
+    .log-form{grid-template-columns:1fr}
+    .tools{padding:20px 20px 0}
+    .modal-body{padding:24px 20px 28px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Espresso lab · recetario</div>
+  <h1>Café,<br><span class="thin">al gramo</span></h1>
+  <p class="sub">Fichas técnicas para practicar en casa. Cada receta con su ratio, dosis, tiempo y molienda — más los pasos para clavarla. Tocá una para ver el detalle y marcá las que ya bordaste.</p>
+  <div class="progress-line">
+    <span>Practicadas <span class="count" id="doneCount">0</span> / <span id="totalCount">0</span></span>
+    <span class="bar"><span id="progressBar"></span></span>
+  </div>
+  <div class="backup-row">
+    <span class="backup-label">Respaldo:</span>
+    <button class="backup-btn" onclick="exportData()">↥ Exportar</button>
+    <button class="backup-btn" onclick="triggerImport()">↧ Importar</button>
+    <input type="file" id="importFile" accept="application/json,.json" onchange="handleImport(event)" style="display:none">
+  </div>
+</header>
+
+<div class="toolbar" id="filters"></div>
+
+<main>
+  <div class="grid" id="grid"></div>
+</main>
+
+<footer>
+  <div class="rule"></div>
+  <div>Ratio = café molido : líquido en taza. Dosis in / yield out en gramos. Tiempos y temperaturas son puntos de partida — ajustá a tu gusto y a tu máquina.</div>
+  <div style="margin-top:8px">Tus recetas, bitácora y progreso se guardan en este navegador. Usá <b style="color:var(--cream-dim)">Exportar</b> cada tanto para tener un respaldo en un archivo.</div>
+</footer>
+
+<!-- modal detalle -->
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal"></div>
+</div>
+
+<!-- modal formulario -->
+<div class="overlay" id="formOverlay">
+  <div class="modal" id="formModal"></div>
+</div>
+
+<script>
+const RECIPES = [
+  // ---------- BASE / ESPRESSO ----------
+  {
+    id:"espresso", cat:"Espresso", name:"Espresso", note:"El shot base. De acá sale casi todo.",
+    ratio:"1:2", dose:"18g", yield:"36g", time:"25–30s", grind:"Fina", temp:"92–94°C",
+    steps:[
+      "Dosificá 18g de café en la canasta y nivelá con un golpecito.",
+      "Distribuí parejo y tampeá firme y derecho (~15kg de presión).",
+      "Purgá el grupo un segundo y colocá el portafiltro.",
+      "Extraé apuntando a 36g en taza en unos 25–30 segundos.",
+      "Si sale muy rápido y aguado, molé más fino; si gotea y tarda, más grueso."
+    ],
+    tip:"Con la canasta presurizada de fábrica de la Oster la molienda perdona mucho y siempre vas a ver crema falsa. Cuando pases a la <b>canasta no presurizada + portafiltro sin fondo</b> ahí sí el molido y el tampeo empiezan a mandar de verdad."
+  },
+  {
+    id:"ristretto", cat:"Espresso", name:"Ristretto", note:"Más corto y concentrado. Dulce y denso.",
+    ratio:"1:1.5", dose:"18g", yield:"27g", time:"25–30s", grind:"Fina+", temp:"92–94°C",
+    steps:[
+      "Misma dosis que el espresso (18g), bien distribuido y tampeado.",
+      "Molé un toque más fino que para espresso normal.",
+      "Cortá la extracción antes, apuntando a ~27g en taza.",
+      "Buscá un shot espeso, dulce, sin la parte final más amarga."
+    ],
+    tip:"El ristretto resalta lo dulce y aromático porque frena antes de que se extraigan los compuestos más amargos. Buen punto de partida si un café te sale muy astringente."
+  },
+  {
+    id:"lungo", cat:"Espresso", name:"Lungo", note:"Largo. Más volumen, más cuerpo tostado.",
+    ratio:"1:3", dose:"18g", yield:"54g", time:"30–40s", grind:"Media-fina", temp:"90–92°C",
+    steps:[
+      "Dosis de 18g, distribuido y tampeado como siempre.",
+      "Molé un poquito más grueso para no ahogar la extracción.",
+      "Extraé hasta ~54g en taza, dejando correr más agua.",
+      "Sale más amargo y con más cafeína percibida — ideal para tomar solo largo."
+    ],
+    tip:"No es lo mismo que un americano: acá el agua pasa <b>a través</b> del café toda la extracción, así que arrastra más amargor. Si lo querés más suave, mejor hacé un americano."
+  },
+  {
+    id:"doppio", cat:"Espresso", name:"Doppio", note:"Espresso doble. La base de casi todas las bebidas grandes.",
+    ratio:"1:2", dose:"18g", yield:"36g", time:"25–30s", grind:"Fina", temp:"92–94°C",
+    steps:[
+      "Usá la canasta doble (la de ~18g), que es la que trae la mayoría de las máquinas.",
+      "Dosificá 18g, distribuí parejo y tampeá firme y derecho.",
+      "Extraé apuntando a 36g en taza en 25–30 segundos, igual que el espresso base.",
+      "Salen los dos shots juntos por el pico doble; con portafiltro sin fondo lo ves como una sola extracción pareja."
+    ],
+    tip:"Ojo con la confusión clásica: en el espresso moderno <b>'un espresso' ya suele ser un doppio</b> (canasta doble, 18g→36g). El single de 7–9g casi no se usa. Por eso este es el shot que te piden el flat white, el long black o el americano cuando querés más café en la taza."
+  },
+
+  // ---------- CON LECHE ----------
+  {
+    id:"cortado", cat:"Con leche", name:"Cortado", note:"Espresso cortado con poca leche. El clásico de acá.",
+    ratio:"1:1", dose:"18g", yield:"36g", time:"—", grind:"Fina", temp:"—",
+    milk:"~40ml",
+    steps:[
+      "Hacé un espresso base (36g) en una taza chica.",
+      "Vaporizá ~40ml de leche buscando textura sedosa, poca espuma.",
+      "Golpeá el jarrito en la mesa y hacé girar para pulir la microespuma.",
+      "Verté la leche cortando el espresso hasta llenar. Ratio leche:café bajo, ~1:1."
+    ],
+    tip:"El cortado va con muy poca espuma: buscás <b>leche texturizada</b>, no un capuchino chico. Vaporizá justo hasta que el jarrito esté apenas incómodo de tocar (~55–60°C)."
+  },
+  {
+    id:"flatwhite", cat:"Con leche", name:"Flat white", note:"Doble shot + microfoam finita. Fuerte y cremoso.",
+    ratio:"1:4", dose:"18g", yield:"36g", time:"—", grind:"Fina", temp:"—",
+    milk:"~120ml",
+    steps:[
+      "Extraé un doppio / espresso doble (36g) en la taza.",
+      "Vaporizá ~120ml de leche con una capa muy fina de microespuma (~0.5cm).",
+      "Pulí la leche hasta que quede brillante y sin burbujas visibles.",
+      "Verté integrando bien café y leche; podés cerrar con un latte art simple."
+    ],
+    tip:"La diferencia con el latte es la proporción: el flat white tiene <b>más café por ml de leche</b> y menos espuma. Taza chica (150–160ml), sabor a café bien presente."
+  },
+  {
+    id:"cappuccino", cat:"Con leche", name:"Cappuccino", note:"Tercios parejos: espresso, leche, espuma.",
+    ratio:"1:4", dose:"18g", yield:"36g", time:"—", grind:"Fina", temp:"—",
+    milk:"~120ml",
+    steps:[
+      "Espresso base (36g) en taza de ~180ml.",
+      "Vaporizá leche generando más espuma que en un latte (aireá un poco más al principio).",
+      "Apuntá a tercios: 1/3 café, 1/3 leche, 1/3 espuma.",
+      "Verté controlando para que la espuma corone arriba. Opcional: cacao por encima."
+    ],
+    tip:"Para más espuma, mantené la punta del vaporizador cerca de la superficie un poquito más al arrancar (fase de aireado) antes de sumergirla para hacer el remolino."
+  },
+  {
+    id:"latte", cat:"Con leche", name:"Caffè latte", note:"Mucha leche, poca espuma. Suave.",
+    ratio:"1:6", dose:"18g", yield:"36g", time:"—", grind:"Fina", temp:"—",
+    milk:"~200ml",
+    steps:[
+      "Espresso base (36g) en un vaso o taza grande (~250ml).",
+      "Vaporizá ~200ml de leche con textura sedosa y capa fina de espuma.",
+      "Integrá bien la leche con el café vertiendo desde alto y bajando al final.",
+      "Cerrá con un poco de espuma arriba para intentar un dibujito."
+    ],
+    tip:"Es la receta más lechosa y suave del grupo, ideal para practicar <b>latte art</b> porque tenés más leche para maniobrar. Si querés más sabor a café, subí a doble shot."
+  },
+  {
+    id:"macchiato", cat:"Con leche", name:"Caffè macchiato", note:"Espresso apenas 'manchado' con espuma.",
+    ratio:"1:2", dose:"18g", yield:"36g", time:"—", grind:"Fina", temp:"—",
+    milk:"1 cda",
+    steps:[
+      "Hacé un espresso base (36g) en taza chica.",
+      "Vaporizá un poquito de leche o usá una cucharada de espuma.",
+      "Ponele apenas una 'mancha' de espuma arriba del shot.",
+      "Se toma casi como espresso, con un toque cremoso que suaviza el amargor."
+    ],
+    tip:"'Macchiato' = manchado. No confundir con el latte macchiato (que es al revés: mucha leche con un chorrito de café)."
+  },
+  {
+    id:"mocha", cat:"Con leche", name:"Mocha", note:"Espresso + chocolate + leche. El postre.",
+    ratio:"1:6", dose:"18g", yield:"36g", time:"—", grind:"Fina", temp:"—",
+    milk:"~180ml",
+    steps:[
+      "Poné 15–20g de chocolate o cacao amargo en la taza.",
+      "Extraé el espresso (36g) encima y revolvé para fundir el chocolate.",
+      "Vaporizá ~180ml de leche e integrá.",
+      "Coroná con espuma y, si querés, un poco de cacao o chocolate rallado."
+    ],
+    tip:"Usá cacao amargo o chocolate de verdad en vez de sirope si podés — se siente muchísimo. Balanceá el dulzor a tu gusto arrancando con poco."
+  },
+
+  // ---------- NEGRO / CON AGUA ----------
+  {
+    id:"americano", cat:"Negro", name:"Americano", note:"Espresso diluido en agua caliente. Largo y suave.",
+    ratio:"1:2 shot", dose:"18g", yield:"36g", time:"—", grind:"Fina", temp:"—",
+    water:"~120ml",
+    steps:[
+      "Extraé un espresso base (36g).",
+      "Calentá ~120ml de agua (no hirviendo, ~90°C).",
+      "Agregá el espresso al agua, o el agua al espresso según preferencia.",
+      "Ajustá la cantidad de agua hasta la fuerza que te guste."
+    ],
+    tip:"Diluir el espresso con agua da algo más parecido al café de filtro pero más redondo. Menos amargo que un lungo porque no fuerza la extracción."
+  },
+  {
+    id:"longblack", cat:"Negro", name:"Long black", note:"Agua primero, espresso encima. Conserva la crema.",
+    ratio:"1:2 shot", dose:"18g", yield:"36g", time:"—", grind:"Fina", temp:"—",
+    water:"~90ml",
+    steps:[
+      "Poné ~90ml de agua caliente en la taza primero.",
+      "Extraé el doppio / espresso directamente sobre el agua.",
+      "Al ir arriba, la crema queda flotando y se preserva el aroma.",
+      "No revuelvas si querés mantener la capa de crema intacta."
+    ],
+    tip:"Es básicamente un americano al revés. La diferencia es sutil pero real: verter el café encima <b>conserva la crema</b> y da una nariz más aromática."
+  },
+
+  // ---------- METODOS ----------
+  {
+    id:"moka", cat:"Métodos", name:"Cafetera italiana", note:"La Moka de toda la vida. Intenso, sin máquina.",
+    ratio:"—", dose:"llená el filtro", yield:"—", time:"~5 min", grind:"Media-fina", temp:"—",
+    steps:[
+      "Llená la base con agua caliente hasta justo debajo de la válvula.",
+      "Colmá el embudo de café sin tampear (parejo y al ras).",
+      "Enroscá y llevá a fuego medio-bajo con la tapa abierta.",
+      "Cuando empiece a salir café rubio y gorgotear, sacá del fuego y cortá con la base bajo el chorro de agua fría.",
+      "Serví apenas termina de subir — no lo dejes hervir."
+    ],
+    tip:"Agua caliente en la base evita que el café se 'cocine' de más mientras calienta. Fuego suave = menos amargor. No tampees el café en la Moka."
+  },
+  {
+    id:"prensa", cat:"Métodos", name:"Prensa francesa", note:"Full inmersión. Cuerpo pleno, fácil de clavar.",
+    ratio:"1:15", dose:"30g", yield:"450ml", time:"4 min", grind:"Gruesa", temp:"93–96°C",
+    steps:[
+      "Poné 30g de café molido grueso en la prensa.",
+      "Verté 450ml de agua caliente (~94°C) de una y arrancá el timer.",
+      "A los 4 min, rompé la costra de arriba con una cuchara y sacá la espuma.",
+      "Bajá el émbolo suave y servís enseguida para que no se sobreextraiga."
+    ],
+    tip:"El secreto es <b>molienda gruesa y pareja</b>: si molés fino se te pasa por el filtro y queda barroso y amargo. Servilo todo al terminar, no lo dejes reposando con el café adentro."
+  },
+  {
+    id:"v60", cat:"Métodos", name:"V60 / pour over", note:"Filtrado. Limpio, aromático, resalta el origen.",
+    ratio:"1:16", dose:"20g", yield:"320ml", time:"2:30–3:00", grind:"Media", temp:"92–96°C",
+    steps:[
+      "Poné el filtro, enjuagalo con agua caliente y descartá esa agua.",
+      "Agregá 20g de café molido medio y hacé un pocito en el centro.",
+      "Bloom: verté ~40g de agua, esperá 30–45s a que se hinche y desgasifique.",
+      "Seguí vertiendo en círculos en 2–3 tandas hasta llegar a 320g.",
+      "Total apuntá a 2:30–3:00 de tiempo de contacto."
+    ],
+    tip:"El bloom (mojar y esperar) libera el CO₂ y hace la extracción más pareja. Café más fresco = bloom más burbujeante. Verté lento y al centro, sin mojar mucho las paredes del filtro."
+  },
+  {
+    id:"aeropress", cat:"Métodos", name:"Aeropress", note:"Versátil y a prueba de todo. Ideal para experimentar.",
+    ratio:"1:15", dose:"15g", yield:"220ml", time:"~2 min", grind:"Media-fina", temp:"85–92°C",
+    steps:[
+      "Armá la Aeropress y poné el filtro enjuagado en la tapa.",
+      "Agregá 15g de café molido medio-fino.",
+      "Verté 220ml de agua, revolvé un par de veces y tapá.",
+      "Esperá ~1:30, después presioná suave y parejo durante ~30s.",
+      "Frená apenas escuches el silbido para no meter el amargor del final."
+    ],
+    tip:"Es el método más indulgente para arrancar: si algo sale raro, cambiás una variable a la vez (molienda, tiempo, temp) y ves qué pasa. Probá también la técnica invertida."
+  },
+  {
+    id:"coldbrew", cat:"Métodos", name:"Cold brew", note:"En frío, sin apuro. Dulce y bajo en acidez.",
+    ratio:"1:8", dose:"100g", yield:"800ml", time:"12–18h", grind:"Gruesa", temp:"Ambiente/frío",
+    steps:[
+      "Molé 100g bien grueso y ponelo en un frasco.",
+      "Agregá 800ml de agua fría, revolvé para mojar todo el café.",
+      "Tapá y dejá 12–18h a temperatura ambiente o en la heladera.",
+      "Colá con filtro de papel o tela. Te queda un concentrado.",
+      "Servís con hielo y diluís con agua o leche a gusto (1:1 aprox)."
+    ],
+    tip:"Sale un <b>concentrado</b>, no listo para tomar: rendí más diluyendo. La extracción en frío baja mucho la acidez y el amargor, por eso queda tan dulce. Dura ~1 semana en la heladera."
+  }
+];
+
+const CATS = ["Todas","Espresso","Con leche","Negro","Métodos","Mías"];
+let activeCat = "Todas";
+let onlyPending = false;
+let done = {};
+let custom = [];      // recetas cargadas por vos
+let editingId = null; // id que se está editando (o null si es nueva)
+let log = {};         // bitácora de intentos por receta
+let timerInterval=null, timerStart=0, timerElapsed=0, timerRunning=false, timerRange=null;
+
+// lista completa = predefinidas + tuyas
+function allRecipes(){ return [...RECIPES, ...custom]; }
+
+// ---------- storage (localStorage) ----------
+function loadDone(){
+  try{ const v=localStorage.getItem("cafe_done"); if(v) done=JSON.parse(v); }catch(e){ done={}; }
+}
+function saveDone(){
+  try{ localStorage.setItem("cafe_done", JSON.stringify(done)); }catch(e){}
+}
+function loadCustom(){
+  try{ const v=localStorage.getItem("cafe_custom"); if(v) custom=JSON.parse(v); }catch(e){ custom=[]; }
+}
+function saveCustom(){
+  try{ localStorage.setItem("cafe_custom", JSON.stringify(custom)); }catch(e){}
+}
+function loadLog(){
+  try{ const v=localStorage.getItem("cafe_log"); if(v) log=JSON.parse(v); }catch(e){ log={}; }
+}
+function saveLog(){
+  try{ localStorage.setItem("cafe_log", JSON.stringify(log)); }catch(e){}
+}
+
+// ---------- almacenamiento persistente + respaldo ----------
+async function requestPersist(){
+  try{
+    if(navigator.storage && navigator.storage.persist){
+      const already = await navigator.storage.persisted();
+      if(!already) await navigator.storage.persist();
+    }
+  }catch(e){}
+}
+function exportData(){
+  const data = { app:"recetario-cafe", v:1, exported:new Date().toISOString(), custom, done, log };
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const stamp = new Date().toISOString().slice(0,10);
+  a.href = url; a.download = "recetario-cafe-"+stamp+".json";
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+function triggerImport(){ document.getElementById("importFile").click(); }
+function handleImport(e){
+  const file = e.target.files[0];
+  e.target.value = "";
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    let data;
+    try{ data = JSON.parse(reader.result); }
+    catch(err){ alert("No pude leer ese archivo. ¿Es el JSON que exportaste desde acá?"); return; }
+    if(!confirm("Importar reemplaza tus recetas, bitácora y practicadas por las del archivo. ¿Seguir?")) return;
+    custom = Array.isArray(data.custom) ? data.custom : [];
+    done = (data.done && typeof data.done==="object") ? data.done : {};
+    log  = (data.log  && typeof data.log==="object")  ? data.log  : {};
+    saveCustom(); saveDone(); saveLog();
+    renderFilters(); renderGrid();
+    alert("Listo, datos importados. ✓");
+  };
+  reader.readAsText(file);
+}
+function registerSW(){
+  if("serviceWorker" in navigator){
+    window.addEventListener("load", ()=>{
+      navigator.serviceWorker.register("service-worker.js").catch(()=>{});
+    });
+  }
+}
+
+// ---------- render ----------
+function renderFilters(){
+  const f = document.getElementById("filters");
+  f.innerHTML = "";
+  CATS.forEach(c=>{
+    const b = document.createElement("button");
+    b.className = "chip"+(activeCat===c?" active":"");
+    b.textContent = c;
+    b.onclick = ()=>{ activeCat=c; renderFilters(); renderGrid(); };
+    f.appendChild(b);
+  });
+  const p = document.createElement("button");
+  p.className = "chip done-toggle"+(onlyPending?" active":"");
+  p.textContent = onlyPending ? "◉ Pendientes" : "○ Pendientes";
+  p.onclick = ()=>{ onlyPending=!onlyPending; renderFilters(); renderGrid(); };
+  f.appendChild(p);
+
+  const add = document.createElement("button");
+  add.className = "chip add";
+  add.textContent = "+ Nueva receta";
+  add.onclick = ()=>openForm();
+  f.appendChild(add);
+}
+
+function specHTML(r){
+  const items = [];
+  items.push(`<div class="spec"><div class="k">Ratio</div><div class="v">${r.ratio}</div></div>`);
+  items.push(`<div class="spec"><div class="k">Dosis</div><div class="v">${r.dose}</div></div>`);
+  if(r.yield && r.yield!=="—") items.push(`<div class="spec"><div class="k">Yield</div><div class="v">${r.yield}</div></div>`);
+  else if(r.milk) items.push(`<div class="spec"><div class="k">Leche</div><div class="v">${r.milk}</div></div>`);
+  else if(r.water) items.push(`<div class="spec"><div class="k">Agua</div><div class="v">${r.water}</div></div>`);
+  return items.join("");
+}
+
+function renderGrid(){
+  const g = document.getElementById("grid");
+  g.innerHTML = "";
+  let list = allRecipes().filter(r=>{
+    if(activeCat==="Todas") return true;
+    if(activeCat==="Mías") return r.mine;
+    return r.cat===activeCat;
+  });
+  if(onlyPending) list = list.filter(r=>!done[r.id]);
+  if(!list.length){
+    let msg = "No hay recetas acá.";
+    if(activeCat==="Mías") msg = 'Todavía no cargaste ninguna receta tuya.<br>Tocá "+ Nueva receta" para arrancar. ☕';
+    else if(onlyPending) msg = "¡Ya practicaste todo lo de este filtro! ☕";
+    g.innerHTML = `<div class="empty">${msg}</div>`;
+    updateProgress(); return;
+  }
+  list.forEach(r=>{
+    const c = document.createElement("div");
+    c.className = "card"+(done[r.id]?" done":"");
+    c.innerHTML = `
+      <div class="card-top">
+        <span class="card-cat-row">
+          <span class="card-cat">${r.cat}</span>
+          ${r.mine?'<span class="badge-mine">Mía</span>':''}
+        </span>
+        <span class="check"><svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg></span>
+      </div>
+      <h3>${r.name}</h3>
+      <div class="card-note">${r.note||""}</div>
+      <div class="specs">${specHTML(r)}</div>`;
+    c.onclick = ()=>openModal(r.id);
+    g.appendChild(c);
+  });
+  updateProgress();
+}
+
+function updateProgress(){
+  const all = allRecipes();
+  const total = all.length;
+  const d = all.filter(r=>done[r.id]).length;
+  document.getElementById("doneCount").textContent = d;
+  document.getElementById("totalCount").textContent = total;
+  document.getElementById("progressBar").style.width = (d/total*100)+"%";
+}
+
+// ---------- helpers de parseo ----------
+function parseAmount(v){
+  if(!v) return null;
+  const m = v.toString().match(/([\d.]+)/);
+  if(!m) return null;
+  const num = parseFloat(m[1]);
+  if(isNaN(num)) return null;
+  const unit = v.toString().replace(/[~\d.,\s]/g,"").replace(/[-–—].*$/,"") || "";
+  return {num, unit};
+}
+function parseTime(t){
+  if(!t || t==="—") return null;
+  if(/h/i.test(t)) return null;                 // horas: sin cronómetro (cold brew)
+  const clock = t.match(/(\d+):(\d{2})/g);      // formato M:SS
+  if(clock){
+    const toSec = c=>{ const [m,s]=c.split(":").map(Number); return m*60+s; };
+    const secs = clock.map(toSec);
+    return {min:secs[0], max:secs[secs.length-1]};
+  }
+  const nums = (t.match(/\d+/g)||[]).map(Number);
+  if(!nums.length) return null;
+  if(/min/i.test(t)) return {min:nums[0]*60, max:(nums[1]||nums[0])*60};
+  return {min:nums[0], max:nums[1]||nums[0]};    // segundos
+}
+function roundNice(n){ return n>=100 ? Math.round(n) : Math.round(n*10)/10; }
+function fmtDate(ts){
+  const d = new Date(ts);
+  const day = d.toLocaleDateString("es-AR",{day:"2-digit",month:"2-digit"});
+  const hr  = d.toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
+  return day+" · "+hr;
+}
+
+// ---------- cronómetro ----------
+function fmtTimer(sec){
+  if(timerRange && timerRange.max<=90) return sec.toFixed(1)+"s";
+  const m=Math.floor(sec/60), s=Math.floor(sec%60);
+  return m+":"+String(s).padStart(2,"0");
+}
+function timerColor(){
+  if(!timerRunning && timerElapsed===0) return "idle";
+  if(!timerRange) return "running";
+  if(timerElapsed < timerRange.min) return "running";
+  if(timerElapsed <= timerRange.max) return "in-range";
+  return "over";
+}
+function updateTimerUI(){
+  const d = document.getElementById("timerDisplay");
+  if(!d) return;
+  d.textContent = fmtTimer(timerElapsed);
+  d.className = "timer-display "+timerColor();
+}
+function tickTimer(){ timerElapsed = (Date.now()-timerStart)/1000; updateTimerUI(); }
+function toggleTimer(){
+  const btn = document.getElementById("timerToggle");
+  if(timerRunning){
+    clearInterval(timerInterval); timerRunning=false;
+    if(btn) btn.textContent = "Seguir";
+  } else {
+    timerStart = Date.now() - timerElapsed*1000;
+    timerRunning = true;
+    timerInterval = setInterval(tickTimer, 50);
+    if(btn) btn.textContent = "Detener";
+  }
+}
+function resetTimer(){
+  clearInterval(timerInterval); timerRunning=false; timerElapsed=0;
+  const btn = document.getElementById("timerToggle");
+  if(btn) btn.textContent = "Arrancar";
+  updateTimerUI();
+}
+function cleanupTimer(){ clearInterval(timerInterval); timerRunning=false; timerElapsed=0; timerInterval=null; }
+function timerToLog(){
+  const t = document.getElementById("logTime");
+  if(t){ t.value = timerRange && timerRange.max<=90 ? timerElapsed.toFixed(1)+"s" : fmtTimer(timerElapsed); }
+}
+
+// ---------- calculadora de ratio / escalado ----------
+function calcUpdate(id){
+  const r = allRecipes().find(x=>x.id===id);
+  const base = parseAmount(r.dose);
+  const out  = parseAmount(r.yield) || parseAmount(r.water) || parseAmount(r.milk);
+  const inp  = parseFloat(document.getElementById("calcDose").value);
+  const outEl = document.getElementById("calcOut");
+  const ratioEl = document.getElementById("calcRatio");
+  if(!outEl || isNaN(inp) || inp<=0 || !base || !out){
+    if(outEl) outEl.innerHTML = "—";
+    if(ratioEl) ratioEl.textContent = "";
+    return;
+  }
+  const outVal = out.num*(inp/base.num);
+  const ratio = outVal/inp;
+  outEl.innerHTML = roundNice(outVal)+`<small> ${out.unit}</small>`;
+  ratioEl.textContent = "ratio 1:"+(ratio<10 ? ratio.toFixed(1) : Math.round(ratio));
+}
+function calcScale(id, factor){
+  const r = allRecipes().find(x=>x.id===id);
+  const base = parseAmount(r.dose);
+  if(!base) return;
+  document.getElementById("calcDose").value = roundNice(base.num*factor);
+  calcUpdate(id);
+}
+
+// ---------- bitácora ----------
+function renderLog(id){
+  const box = document.getElementById("logList");
+  if(!box) return;
+  const entries = log[id] || [];
+  if(!entries.length){
+    box.innerHTML = `<div class="log-empty">Todavía no anotaste ningún intento. Anotá el primero ↑</div>`;
+    return;
+  }
+  box.innerHTML = entries.map((e,i)=>`
+    <div class="log-entry">
+      <div class="log-meta">
+        <span class="log-date">${fmtDate(e.d)}</span>
+        ${e.grind?`<span class="log-tag">molienda ${esc(e.grind)}</span>`:""}
+        ${e.time?`<span class="log-tag">${esc(e.time)}</span>`:""}
+      </div>
+      ${e.note?`<div class="log-note-text">${esc(e.note)}</div>`:""}
+      <button class="log-del" onclick="deleteLogEntry('${id}',${i})" title="Borrar intento">✕</button>
+    </div>`).join("");
+}
+function addLogEntry(id){
+  const grind = document.getElementById("logGrind").value.trim();
+  const time  = document.getElementById("logTime").value.trim();
+  const note  = document.getElementById("logNote").value.trim();
+  if(!grind && !time && !note) return;
+  if(!log[id]) log[id] = [];
+  log[id].unshift({d:Date.now(), grind, time, note});
+  saveLog();
+  renderLog(id);
+  document.getElementById("logGrind").value = "";
+  document.getElementById("logTime").value = "";
+  document.getElementById("logNote").value = "";
+}
+function deleteLogEntry(id, idx){
+  if(!log[id]) return;
+  log[id].splice(idx,1);
+  if(!log[id].length) delete log[id];
+  saveLog();
+  renderLog(id);
+}
+
+// ---------- modal ----------
+function openModal(id){
+  const r = allRecipes().find(x=>x.id===id);
+  const m = document.getElementById("modal");
+  cleanupTimer();
+  timerRange = parseTime(r.time);
+
+  const stats = [];
+  stats.push(`<div class="stat"><div class="k">Ratio</div><div class="v">${r.ratio}</div></div>`);
+  stats.push(`<div class="stat"><div class="k">Dosis</div><div class="v">${r.dose}</div></div>`);
+  if(r.yield && r.yield!=="—") stats.push(`<div class="stat"><div class="k">Yield</div><div class="v">${r.yield}</div></div>`);
+  if(r.milk) stats.push(`<div class="stat"><div class="k">Leche</div><div class="v">${r.milk}</div></div>`);
+  if(r.water) stats.push(`<div class="stat"><div class="k">Agua</div><div class="v">${r.water}</div></div>`);
+  if(r.time && r.time!=="—") stats.push(`<div class="stat"><div class="k">Tiempo</div><div class="v">${r.time}</div></div>`);
+  stats.push(`<div class="stat"><div class="k">Molienda</div><div class="v" style="font-size:13px">${r.grind}</div></div>`);
+  if(r.temp && r.temp!=="—") stats.push(`<div class="stat"><div class="k">Temp</div><div class="v" style="font-size:13px">${r.temp}</div></div>`);
+
+  // ¿qué herramientas mostrar?
+  const showTimer = !!timerRange;
+  const base = parseAmount(r.dose);
+  const out  = parseAmount(r.yield) || parseAmount(r.water) || parseAmount(r.milk);
+  const showCalc = !!(base && out);
+
+  let timerHTML = "";
+  if(showTimer){
+    const targetLabel = timerRange.min===timerRange.max
+      ? fmtTargetSecs(timerRange.min)
+      : fmtTargetSecs(timerRange.min)+"–"+fmtTargetSecs(timerRange.max);
+    timerHTML = `
+      <div class="tool">
+        <div class="tool-label"><span>Cronómetro</span><span class="target">objetivo ${targetLabel}</span></div>
+        <div class="timer-display idle" id="timerDisplay">${timerRange.max<=90?"0.0s":"0:00"}</div>
+        <div class="timer-btns">
+          <button id="timerToggle" onclick="toggleTimer()">Arrancar</button>
+          <button onclick="resetTimer()">Reset</button>
+          <button class="send" onclick="timerToLog()" title="Pasar a la bitácora">↓ anotar</button>
+        </div>
+      </div>`;
+  }
+
+  let calcHTML = "";
+  if(showCalc){
+    calcHTML = `
+      <div class="tool">
+        <div class="tool-label"><span>Calculadora</span></div>
+        <div class="calc-out-big" id="calcOut">—</div>
+        <div class="calc-ratio" id="calcRatio"></div>
+        <div class="calc-in">
+          <input id="calcDose" type="number" step="0.5" min="0" value="${base.num}" oninput="calcUpdate('${id}')">
+          <label>g de café →</label>
+        </div>
+        <div class="calc-scale">
+          <button onclick="calcScale('${id}',0.5)">½</button>
+          <button onclick="calcScale('${id}',1)">1×</button>
+          <button onclick="calcScale('${id}',2)">2×</button>
+          <button onclick="calcScale('${id}',3)">3×</button>
+        </div>
+      </div>`;
+  }
+
+  const toolsHTML = (showTimer||showCalc)
+    ? `<div class="tools${showTimer&&showCalc?" two":""}">${timerHTML}${calcHTML}</div>` : "";
+
+  m.innerHTML = `
+    <div class="modal-head">
+      <button class="close" onclick="closeModal()">✕</button>
+      <div class="modal-cat">${r.cat}</div>
+      <h2>${r.name}</h2>
+      <div class="modal-note">${r.note||""}</div>
+    </div>
+    <div class="stat-strip">${stats.join("")}</div>
+    ${toolsHTML}
+    <div class="modal-body">
+      <p class="body-label">Paso a paso</p>
+      <ol class="steps">${r.steps.map(s=>`<li>${s}</li>`).join("")}</ol>
+      ${r.tip?`<div class="tip"><b>Tip →</b> ${r.tip}</div>`:""}
+
+      <p class="body-label">Bitácora de intentos</p>
+      <div class="log-form">
+        <input id="logGrind" placeholder="Molienda (ej: 12 clicks)">
+        <input id="logTime" placeholder="Tiempo (ej: 27s)">
+        <input id="logNote" class="full" placeholder="Cómo salió / qué ajustar la próxima">
+      </div>
+      <button class="log-add" onclick="addLogEntry('${id}')">+ Anotar intento</button>
+      <div class="log-list" id="logList"></div>
+
+      <button class="modal-mark${done[r.id]?" done":""}" id="markBtn" onclick="toggleDone('${r.id}')">
+        ${done[r.id]?"✓ Practicada":"Marcar como practicada"}
+      </button>
+      ${r.mine?`<div class="modal-actions-row" style="margin-top:10px">
+        <button class="modal-mini" style="flex:1" onclick="openForm('${r.id}')">✎ Editar</button>
+        <button class="modal-mini del" style="flex:1" onclick="deleteRecipe('${r.id}')">🗑 Borrar</button>
+      </div>`:""}
+    </div>`;
+  document.getElementById("overlay").classList.add("open");
+  document.body.style.overflow="hidden";
+  if(showCalc) calcUpdate(id);
+  renderLog(id);
+}
+function fmtTargetSecs(s){
+  if(s>=60){ const m=Math.floor(s/60), r=s%60; return r?`${m}:${String(r).padStart(2,"0")}`:`${m} min`; }
+  return s+"s";
+}
+function closeModal(){
+  cleanupTimer();
+  document.getElementById("overlay").classList.remove("open");
+  document.body.style.overflow="";
+}
+function toggleDone(id){
+  done[id] = !done[id];
+  if(!done[id]) delete done[id];
+  saveDone();
+  const btn = document.getElementById("markBtn");
+  if(btn){
+    btn.classList.toggle("done", !!done[id]);
+    btn.textContent = done[id]?"✓ Practicada":"Marcar como practicada";
+  }
+  renderGrid();
+}
+
+document.getElementById("overlay").addEventListener("click", e=>{
+  if(e.target.id==="overlay") closeModal();
+});
+
+// ---------- formulario ----------
+function openForm(id){
+  editingId = id || null;
+  const r = id ? custom.find(x=>x.id===id) : {};
+  const catOpts = ["Espresso","Con leche","Negro","Métodos"]
+    .map(c=>`<option value="${c}"${r.cat===c?" selected":""}>${c}</option>`).join("");
+  const stepsText = (r.steps||[]).join("\n");
+  const fm = document.getElementById("formModal");
+  fm.innerHTML = `
+    <div class="modal-head">
+      <button class="close" onclick="closeForm()">✕</button>
+      <div class="modal-cat">${id?"Editar receta":"Nueva receta"}</div>
+      <h2>${id?"Editar":"Tu receta"}</h2>
+      <div class="modal-note">Lo único obligatorio es el nombre. El resto, lo que tengas.</div>
+    </div>
+    <div class="form-body">
+      <div class="field">
+        <label>Nombre *</label>
+        <input id="f-name" value="${esc(r.name)}" placeholder="Ej: Mi espresso de la mañana" maxlength="40">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Categoría</label>
+          <select id="f-cat">${catOpts}</select>
+        </div>
+        <div class="field">
+          <label>Nota corta</label>
+          <input id="f-note" value="${esc(r.note)}" placeholder="Una línea que la describa" maxlength="60">
+        </div>
+      </div>
+      <div class="field-row3">
+        <div class="field"><label>Ratio</label><input id="f-ratio" value="${esc(r.ratio)}" placeholder="1:2"></div>
+        <div class="field"><label>Dosis</label><input id="f-dose" value="${esc(r.dose)}" placeholder="18g"></div>
+        <div class="field"><label>Yield / salida</label><input id="f-yield" value="${esc(r.yield)}" placeholder="36g"></div>
+      </div>
+      <div class="field-row3">
+        <div class="field"><label>Tiempo</label><input id="f-time" value="${esc(r.time)}" placeholder="25–30s"></div>
+        <div class="field"><label>Molienda</label><input id="f-grind" value="${esc(r.grind)}" placeholder="Fina"></div>
+        <div class="field"><label>Temp</label><input id="f-temp" value="${esc(r.temp)}" placeholder="92°C"></div>
+      </div>
+      <div class="field">
+        <label>Paso a paso</label>
+        <textarea id="f-steps" placeholder="Un paso por línea:&#10;Dosificá 18g&#10;Tampeá firme&#10;Extraé a 36g">${esc(stepsText)}</textarea>
+        <div class="hint">Un paso por renglón. Se numeran solos.</div>
+      </div>
+      <div class="field">
+        <label>Tip (opcional)</label>
+        <textarea id="f-tip" placeholder="Ese detalle que hace la diferencia" style="min-height:64px">${esc(r.tip)}</textarea>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-ghost" onclick="closeForm()">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveRecipe()">${id?"Guardar cambios":"Guardar receta"}</button>
+      </div>
+    </div>`;
+  document.getElementById("formOverlay").classList.add("open");
+  document.body.style.overflow="hidden";
+  setTimeout(()=>document.getElementById("f-name").focus(),50);
+}
+function closeForm(){
+  document.getElementById("formOverlay").classList.remove("open");
+  editingId = null;
+  if(!document.getElementById("overlay").classList.contains("open")) document.body.style.overflow="";
+}
+function esc(v){ return (v||"").toString().replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+function saveRecipe(){
+  const name = document.getElementById("f-name").value.trim();
+  if(!name){
+    const inp = document.getElementById("f-name");
+    inp.style.borderColor = "#c9707a";
+    inp.focus();
+    return;
+  }
+  const steps = document.getElementById("f-steps").value
+    .split("\n").map(s=>s.trim()).filter(Boolean);
+  const data = {
+    id: editingId || ("custom_"+Date.now()),
+    mine: true,
+    name,
+    cat: document.getElementById("f-cat").value,
+    note: document.getElementById("f-note").value.trim(),
+    ratio: document.getElementById("f-ratio").value.trim() || "—",
+    dose: document.getElementById("f-dose").value.trim() || "—",
+    yield: document.getElementById("f-yield").value.trim(),
+    time: document.getElementById("f-time").value.trim() || "—",
+    grind: document.getElementById("f-grind").value.trim() || "—",
+    temp: document.getElementById("f-temp").value.trim(),
+    steps,
+    tip: document.getElementById("f-tip").value.trim()
+  };
+  if(editingId){
+    const i = custom.findIndex(x=>x.id===editingId);
+    if(i>-1) custom[i] = data;
+  } else {
+    custom.push(data);
+  }
+  saveCustom();
+  closeForm();
+  closeModal();
+  renderFilters();
+  renderGrid();
+}
+function deleteRecipe(id){
+  if(!confirm("¿Borrar esta receta? No se puede deshacer.")) return;
+  custom = custom.filter(x=>x.id!==id);
+  delete done[id];
+  saveCustom(); saveDone();
+  closeModal();
+  renderFilters();
+  renderGrid();
+}
+document.getElementById("formOverlay").addEventListener("click", e=>{
+  if(e.target.id==="formOverlay") closeForm();
+});
+
+document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ closeForm(); closeModal(); } });
+
+// ---------- init ----------
+// ---------- init ----------
+function init(){
+  loadDone();
+  loadCustom();
+  loadLog();
+  renderFilters();
+  renderGrid();
+  requestPersist();
+  registerSW();
+}
+init();
+</script>
+</body>
+</html>
